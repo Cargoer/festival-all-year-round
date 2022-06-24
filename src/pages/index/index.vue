@@ -1,49 +1,41 @@
 <template>
-	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
-		<view>
-			<text class="title">{{title}}</text>
-		</view>
+	<view class="main-wrap">
+		<Header :title="title"></Header>
+    <view class="main-container">
+      <swiper indicator-dots="true" autoplay="false">
+        <swiper-item>
+
+        </swiper-item>
+      </swiper>
+    </view>
 	</view>
 </template>
 
 <script>
-	export default {
-		data() {
-			return {
-				title: 'Hello'
-			}
-		},
-		onLoad() {
+import Header from '@/components/header.vue'
+import { getDateObj } from '@/utils/tools.js'
+import festivals from '@/static/data/festivals.js'
 
-		},
-		methods: {
+export default {
+  data() {
+    return {
+      title: '今日节日',
+      festivalsOfToday: [],
+    }
+  },
+  components: {
+    Header,
+  },
+  onLoad() {
+    let today = getDateObj(new Date())
+    this.festivalsOfToday = festivals?.[today.month]?.[today.day] || []
+  },
+  methods: {
 
-		}
-	}
+  }
+}
 </script>
 
 <style>
-	.content {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-	}
 
-	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin: 200rpx auto 50rpx auto;
-	}
-
-	.text-area {
-		display: flex;
-		justify-content: center;
-	}
-
-	.title {
-		font-size: 36rpx;
-		color: #8f8f94;
-	}
 </style>

@@ -14,4 +14,13 @@
 
 <style>
 	/*每个页面公共css */
+.fr {
+  display: flex;
+  align-items: center;
+}
+.fc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 </style>
