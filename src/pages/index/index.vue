@@ -23,7 +23,7 @@
 <script>
 import Header from '@/components/header.vue'
 import FestivalDetail from './components/festivalDetail.vue'
-import { getDateObj } from '@/utils/tools.js'
+import { getDateObj, getWeekBasedDate } from '@/utils/tools.js'
 import festivalRecords from '@/static/data/festivals.js'
 import { mapState } from 'vuex'
 
@@ -57,7 +57,13 @@ export default {
     this.lastDayOfTheYear = `${this.today.getFullYear()}-12-31`
 
     // 静态模式
-    this.festivals = festivalRecords
+    let regularFestivals = festivalRecords.filter(item => item.type == 'regular')
+    let weekBasedFestivals = festivalRecords.filter(item => item.type == 'weekbased').map(item => {
+      let [month, weekno, dayno] = item.date.split('-').map(item => Number(item))
+      item.date = getWeekBasedDate(this.today.getFullYear(), month, weekno, dayno)
+      return item
+    })
+    this.festivals = [...regularFestivals, ...weekBasedFestivals]
 
     // 采用airtable
     // uni.showLoading()
