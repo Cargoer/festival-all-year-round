@@ -1,22 +1,10 @@
 # featival-all-year-round
 
-## Project setup
+## run
 ```
 yarn install
-```
-
-### Compiles and hot-reloads for development
-```
 yarn serve
 ```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### requirements
 #### basic requirements
@@ -34,3 +22,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
    [csdn@请打码 | 前端上传文件到腾讯云（对象存储）](https://blog.csdn.net/qq_41485414/article/details/80134908?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-80134908-blog-123006660.pc_relevant_paycolumn_v3&spm=1001.2101.3001.4242.1&utm_relevant_index=2)
    备用方案：
    若无法实现上传图片，变成手动输入图片链接
+4. 接入农历节日（是否有对应的判断api，可以copy实现，但是逻辑上有待兼容）
+5. 日历上方添加筛选功能，1）基于节日类型筛选 2）基于节日标签筛选（是否可以获得airtable多选项里的选项枚举）
+6. 支持自行导入excel表格数据（适用于自定义节日，如家庭成员生日）
+7. 增加“距xx节日还有x天”功能，可以选择某个节日，查看剩余天数，支持固定在页面上显示
+8. 支持查询（查询输入即筛选选项置于日历上方，输入查询关键词后实时匹配节日，支持输入日期/节日名/节日标签，点击匹配项可在日历定位到节日那天）

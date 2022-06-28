@@ -57,18 +57,19 @@ export default {
     this.lastDayOfTheYear = `${this.today.getFullYear()}-12-31`
 
     // 静态模式
-    let regularFestivals = festivalRecords.filter(item => item.type == 'regular')
-    let weekBasedFestivals = festivalRecords.filter(item => item.type == 'weekbased').map(item => {
-      let [month, weekno, dayno] = item.date.split('-').map(item => Number(item))
-      item.date = getWeekBasedDate(this.today.getFullYear(), month, weekno, dayno)
-      return item
-    })
-    this.festivals = [...regularFestivals, ...weekBasedFestivals]
+    // let regularFestivals = festivalRecords.filter(item => item.type == 'regular')
+    // let weekBasedFestivals = festivalRecords.filter(item => item.type == 'weekbased').map(item => {
+    //   let [month, weekno, dayno] = item.date.split('-').map(item => Number(item))
+    //   item.date = getWeekBasedDate(this.today.getFullYear(), month, weekno, dayno)
+    //   return item
+    // })
+    // this.festivals = [...regularFestivals, ...weekBasedFestivals]
 
+    console.log("68 reveals festivalTable:", this.festivalTable)
     // 采用airtable
-    // uni.showLoading()
-    // await this.queryFestivalRecords()
-    // uni.hideLoading()
+    uni.showLoading()
+    await this.queryFestivalRecords()
+    uni.hideLoading()
 
     let year = this.today.getFullYear()
     this.selectedInfo = this.festivals.map(item => {
@@ -81,7 +82,21 @@ export default {
   },
   methods: {
     async queryFestivalRecords() {
-      this.festivals = await this.festivalTable.getRecords()
+      let tempFestivals
+      // 静态模式
+      // tempFestivals = festivalRecords
+
+      // airtable
+      tempFestivals = await this.festivalTable.getRecords()
+
+      let regularFestivals = tempFestivals.filter(item => item.type == 'regular')
+      let weekBasedFestivals = tempFestivals.filter(item => item.type == 'weekbased').map(item => {
+        let [month, weekno, dayno] = item.date.split('-').map(item => Number(item))
+        item.date = getWeekBasedDate(this.today.getFullYear(), month, weekno, dayno)
+        return item
+      })
+      this.festivals = [...regularFestivals, ...weekBasedFestivals]
+      console.log("festivals:", this.festivals)
     },
     handleCalendarChange(e) {
       console.log("calendar change:", e)

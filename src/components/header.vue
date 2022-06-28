@@ -1,6 +1,7 @@
 <template>
   <view class="header fr" :style="withStatusBar">
     <image 
+      v-if="leftBtn == 'back'"
       src="@/static/image/back.png" 
       mode="aspectFill" 
       class="back-btn" 
@@ -15,7 +16,11 @@ export default {
     title: {
       type: String,
       default: ''
-    }
+    },
+    leftBtn: {
+      type: String,
+      default: ''
+    },
   },
   computed: {
     withStatusBar() {
