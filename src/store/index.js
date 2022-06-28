@@ -4,8 +4,8 @@ import Vuex from 'vuex'
 import festivalAirtable from '@/api/airtable.js'
 Vue.use(Vuex);
 
-const apiKey = 'YOUR_API_KEY'
-const baseKey = 'YOUR_BASE_KEY'
+const apiKey = 'keyZ4ydi5sz7NHOIZ'
+const baseKey = 'appDaegi6Z13k4i06'
 const tableName = 'festivals_test'
 
 const store = new Vuex.Store({

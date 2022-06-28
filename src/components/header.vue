@@ -5,6 +5,7 @@
       src="@/static/image/back.png" 
       mode="aspectFill" 
       class="back-btn" 
+      @click="navBack"
     ></image>
     <view class="title">{{ title }}</view>
   </view>
@@ -28,8 +29,10 @@ export default {
       return `padding-top: ${statusHeight}px`
     }
   },
-  created() {
-
+  methods: {
+    navBack() {
+      uni.navigateBack()
+    }
   }
 }
 </script>
@@ -41,12 +44,13 @@ export default {
   justify-content: center;
   position: sticky;
   top: 0;
+  border-bottom: 1px solid #b9b9b9;
 
   .back-btn {
     position: absolute;
     width: 56rpx;
     height: 64rpx;
-    left: 11rpx;
+    left: 30rpx;
   }
 
   .title {
