@@ -29,7 +29,7 @@
 
 <script>
 import Header from '@/components/header.vue'
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 
 export default {
   data() {
@@ -74,22 +74,31 @@ export default {
   computed: {
     ...mapState(["festivalTable"])
   },
+  onLoad(e) {
+    console.log("add Festival onload, e:", e)
+    if(e.selectDate) {
+      this.baseFormData.type = 'regular'
+      this.baseFormData.date = e.selectDate
+    }
+  },
   methods: {
+    ...mapMutations(["addFestival"]),
     // TODO
     // 提交后无法自动从airtable同步刷新，可以再存一份到本地
     submit() {
       this.$refs["baseForm"].validate().then(res => {
         console.log('pass validate:', res);
         // 添加接口
+        this.addFestival(this.baseFormData)
         this.festivalTable.addRecord(this.baseFormData).then(res => {
           uni.showToast({
             title: '添加成功',
             icon: 'none',
             duration: 2000,
-            complete() {
-              uni.navigateBack()
-            }
           })
+          setTimeout(() => {
+            uni.navigateBack()
+          }, 2500)
         }).catch(err => {
           uni.showToast({
             title: '添加失败' + err?.message,

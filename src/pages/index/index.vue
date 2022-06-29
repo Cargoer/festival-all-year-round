@@ -4,7 +4,7 @@
     <view class="main-container">
       <uni-calendar 
         class="uni-calendar--hook" 
-        :selected="selectedInfo" 
+        :selected="festivalInCalendar" 
         :showMonth="false" 
         :start-date="firstDayOfTheYear"
         :end-date="lastDayOfTheYear"
@@ -40,7 +40,7 @@ import Header from '@/components/header.vue'
 import FestivalDetail from './components/festivalDetail.vue'
 import { getDateObj, getWeekBasedDate } from '@/utils/tools.js'
 import festivalRecords from '@/static/data/festivals.js'
-import { mapState } from 'vuex'
+import { mapState, mapGetters, mapMutations } from 'vuex'
 
 export default {
   data() {
@@ -65,11 +65,13 @@ export default {
     styleIsolation: 'shared'
   },
   computed: {
-    ...mapState(["festivalTable"])
+    ...mapState(["festivalTable", "festivalList"]),
+    ...mapGetters(["festivalInCalendar"])
   },
   async onLoad() {
     this.firstDayOfTheYear = `${this.today.getFullYear()}-1-1`
     this.lastDayOfTheYear = `${this.today.getFullYear()}-12-31`
+    this.selectDate = `${this.today.getMonth()+1}-${this.today.getDate()}`
 
     uni.showLoading()
     await this.queryFestivalRecords()
@@ -85,6 +87,7 @@ export default {
     console.log(this.selectedInfo)
   },
   methods: {
+    ...mapMutations(["setFestivalList"]),
     async queryFestivalRecords() {
       let tempFestivals
       // 静态模式
@@ -103,13 +106,14 @@ export default {
         item.date = getWeekBasedDate(this.today.getFullYear(), month, weekno, dayno)
         return item
       })
-      this.festivals = [...regularFestivals, ...weekBasedFestivals]
-      console.log("festivals:", this.festivals)
+      let resultList = [...regularFestivals, ...weekBasedFestivals]
+      this.setFestivalList(resultList)
     },
     handleCalendarChange(e) {
       console.log("calendar change:", e)
+      this.selectDate = `${+e.month}-${e.date}`
       if(e) {
-        this.festivalsOfTheDay = this.festivals.filter(item => {
+        this.festivalsOfTheDay = this.festivalList.filter(item => {
           return item.date == `${+e.month}-${e.date}`
         })
         console.log("festivalsOfTheDay:", this.festivalsOfTheDay)
@@ -123,7 +127,7 @@ export default {
     },
     navToAdd() {
       uni.navigateTo({
-        url: '/pages/index/addFestival'
+        url: `/pages/index/addFestival?selectDate=${this.selectDate}`,
       })
     }
   }
