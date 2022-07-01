@@ -1,3 +1,6 @@
+// import XLSX from 'xlsx'
+var XLSX = require('xlsx')
+
 export function getDateObj(date) {
   let year = date.getFullYear()
   let month = date.getMonth() + 1
@@ -25,6 +28,27 @@ export function getWeekBasedDate(year, month, weekno, dayno) {
     resultDay = 1 + delta + weekno * 7
   }
   return `${month}-${resultDay}`
+}
+
+export function readExcel(file) {
+  if(!file) return new Promise()
+  
+  return new Promise((resolve, reject) => {
+    let wb
+    let fileData = {}
+    let reader = new FileReader()
+    reader.onload = function(e) {
+      let data = e.target.result
+      console.log("xlsx:", XLSX)
+      wb = XLSX.read(data, {type: 'binary'})
+      fileData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
+      console.log("fileData in tools:", fileData)
+      fileData? resolve(fileData): reject(false)
+    }
+    reader.readAsBinaryString(file)
+  })
+  
+  // return fileData
 }
 
 /**用法

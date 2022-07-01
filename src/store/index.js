@@ -6,7 +6,7 @@ Vue.use(Vuex);
 
 const apiKey = ''
 const baseKey = ''
-const tableName = 'festivals_test'
+const tableName = 'festivals'
 
 const store = new Vuex.Store({
   state: {
@@ -26,9 +26,11 @@ const store = new Vuex.Store({
   },
   mutations: {
     setFestivalList(state, val) {
+      console.log("[store] setFestivalList:", val)
       state.festivalList = val
     },
     addFestival(state, val) {
+      console.log("[store] addFestival:", val)
       state.festivalList.push(val)
     }
   }

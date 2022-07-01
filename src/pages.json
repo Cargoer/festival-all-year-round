@@ -11,14 +11,24 @@
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "每逢佳节",
-        "navigationStyle": "custom"
+        "app-plus": {
+          "titleNView": {
+            "backgroundColor": "#F1F6FA",
+            "titleAlign": "center"
+          }
+        }
 			}
 		},
     {
 			"path": "pages/index/addFestival",
 			"style": {
 				"navigationBarTitleText": "添加节日",
-        "navigationStyle": "custom"
+        "app-plus": {
+          "titleNView": {
+            "backgroundColor": "#F1F6FA",
+            "titleAlign": "center"
+          }
+        }
 			}
 		}
 	],

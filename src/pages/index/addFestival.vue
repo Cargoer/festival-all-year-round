@@ -1,13 +1,13 @@
 <template>
   <view class="add-festival-wrap">
-    <Header title="添加节日" leftBtn="back"></Header>
+    <!-- <Header title="添加节日" leftBtn="back"></Header> -->
     <view class="add-festival-container fc p-r">
       <uni-forms class="form" ref="baseForm" :modelValue="baseFormData" :rules="rules">
         <uni-forms-item label="节日名称" required name="name">
           <uni-easyinput v-model="baseFormData.name" placeholder="请输入节日名称" />
         </uni-forms-item>
         <uni-forms-item label="节日类型" required name="type">
-          <uni-data-checkbox v-model="baseFormData.type" :localdata="festivalTypes" />
+          <uni-data-checkbox v-model="baseFormData.type" :localdata="festivalTypes" @change="handleTypeChange" />
         </uni-forms-item>
         <uni-forms-item label="所在日期" v-if="baseFormData.type == 'regular'" required name="date">
           <uni-easyinput v-model="baseFormData.date" placeholder="例：3-15" />
@@ -34,6 +34,7 @@ import { mapState, mapMutations } from 'vuex'
 export default {
   data() {
     return {
+      selectDate: '',
       baseFormData: {
         name: '',
         date: '',
@@ -77,6 +78,7 @@ export default {
   onLoad(e) {
     console.log("add Festival onload, e:", e)
     if(e.selectDate) {
+      this.selectDate = e.selectDate
       this.baseFormData.type = 'regular'
       this.baseFormData.date = e.selectDate
     }
@@ -109,6 +111,14 @@ export default {
         console.log('validate err', err);
       })
     },
+    handleTypeChange(e) {
+      console.log("handleTypeChange e:", e)
+      if(e.detail.data.value == 'weekbased') {
+        this.baseFormData.date = ''
+      } else {
+        this.baseFormData.date = this.selectDate
+      }
+    }
   }
 }
 </script>
