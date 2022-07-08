@@ -1,5 +1,6 @@
 // import XLSX from 'xlsx'
 var XLSX = require('xlsx')
+import ExportJsonExcel from "js-export-excel"
 
 export function getDateObj(date) {
   let year = date.getFullYear()
@@ -8,7 +9,8 @@ export function getDateObj(date) {
   return {
     year,
     month,
-    day
+    day,
+    fileFormatter: `${year}_${month}_${day}`
   }
 }
 
@@ -49,6 +51,25 @@ export function readExcel(file) {
   })
   
   // return fileData
+}
+
+export function exportExcel(data) {
+  console.log("exportExcel data:", data)
+  if(!Array.isArray(data) || data.length === 0) return
+  let attributes = Object.keys(data[0])
+  let option = {}
+  let { fileFormatter } = getDateObj(new Date())
+  option.fileName = `节日导出_${fileFormatter}_${new Date().getTime() % 10000}`
+  option.datas = [
+    {
+      sheetData: data,
+      sheetName: '节日汇总',
+      sheetHeader: attributes,
+      sheetFilter: attributes,
+    }
+  ]
+  let toExcel = new ExportJsonExcel(option)
+  toExcel.saveExcel()
 }
 
 /**用法

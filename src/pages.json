@@ -30,6 +30,18 @@
           }
         }
 			}
+		},
+    {
+			"path": "pages/dayCountDown/index",
+			"style": {
+				"navigationBarTitleText": "节日倒数",
+        "app-plus": {
+          "titleNView": {
+            "backgroundColor": "#F1F6FA",
+            "titleAlign": "center"
+          }
+        }
+			}
 		}
 	],
 	"globalStyle": {

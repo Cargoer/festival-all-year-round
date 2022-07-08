@@ -2,6 +2,23 @@
 	<view class="main-wrap">
 		<!-- <Header :title="title"></Header> -->
     <view class="main-container">
+      <view class="ops fr p-r">
+        <uni-search-bar 
+          :focus="searchFocus" 
+          v-model="searchValue" 
+          cancelButton="none"
+          clearButton="none"
+          placeholder="请输入节日名称"
+        ></uni-search-bar>
+        <view ref="file" class="btn file-btn" @click="activeFileInput">导入节日</view>
+        <view class="btn file-btn" @click="exportFestival">导出节日</view>
+        <view v-if="useExcel" class="btn reset-btn" @click="queryFestivalRecords">恢复默认节日</view>
+        <MatchList 
+          :keyword="searchValue"
+          @choose="locateFestival"
+        ></MatchList>
+      </view>
+
       <uni-calendar 
         class="uni-calendar--hook" 
         :selected="festivalInCalendar" 
@@ -10,6 +27,7 @@
         :end-date="lastDayOfTheYear"
         @change="handleCalendarChange" 
         @monthSwitch="handleMonthSwitch" 
+        :date="locateDate"
       />
       <view class="bottom-area">
         <view class="simple-festival-info">
@@ -28,10 +46,7 @@
       </view>
       <!-- <uni-file-picker limit="1" title="请选择excel文件" @select="handleFileSelect"></uni-file-picker> -->
       
-      <view class="buttons fr">
-        <view ref="file" class="btn file-btn" @click="activeFileInput">导入节日</view>
-        <view v-if="useExcel" class="btn reset-btn" @click="queryFestivalRecords">恢复默认节日</view>
-      </view>
+      <view class="count-down-entry" @click="navToCountDown">节日倒数</view>
       
       <FestivalDetail
         v-show="showDetail"
@@ -45,30 +60,35 @@
 <script>
 import Header from '@/components/header.vue'
 import FestivalDetail from './components/festivalDetail.vue'
-import { getDateObj, getWeekBasedDate, readExcel } from '@/utils/tools.js'
+import MatchList from './components/matchList.vue'
+import { getDateObj, getWeekBasedDate, readExcel, exportExcel } from '@/utils/tools.js'
 import festivalRecords from '@/static/data/festivals.js'
 import { mapState, mapGetters, mapMutations } from 'vuex'
 
 export default {
   data() {
     return {
-      title: '每逢佳节',
-      festivals: [],
-      selectedInfo: [],
-      selectDate: '',
-      festivalsOfTheDay: [],
-      showDetail: false,
+      title: '每逢佳节',  // 页面标题
+      selectDate: '',  // 选中日期
+      festivalsOfTheDay: [],  // 选中日期的节日列表
+      showDetail: false,  // 显示节日详情弹窗
 
       today: new Date(),
-      firstDayOfTheYear: '2022-1-1',
-      lastDayOfTheYear: '2022-12-31',
+      firstDayOfTheYear: '2022-1-1',  // 日历最早选择时间
+      lastDayOfTheYear: '2022-12-31',  // 日历最晚选择时间
 
-      useExcel: false
+      searchValue: '',  // 搜索框输入内容
+      searchFocus: false,
+      showMatch: false,
+      locateDate: '',  // 点搜索结果的定位日期
+
+      useExcel: false,  // 是否导入了excel文件
     }
   },
   components: {
     Header,
-    FestivalDetail
+    FestivalDetail,
+    MatchList,
   },
   options: {
     styleIsolation: 'shared'
@@ -76,6 +96,11 @@ export default {
   computed: {
     ...mapState(["festivalTable", "festivalList"]),
     ...mapGetters(["festivalInCalendar"])
+  },
+  mounted() {
+    window.onerror = function(event) {
+      console.log("log:", event)
+    }
   },
   async onLoad() {
     this.firstDayOfTheYear = `${this.today.getFullYear()}-1-1`
@@ -85,22 +110,12 @@ export default {
     uni.showLoading()
     await this.queryFestivalRecords()
     uni.hideLoading()
-
-    // let year = this.today.getFullYear()
-    // this.selectedInfo = this.festivals.map(item => {
-    //   return {
-    //     date: `${year}-${item.date}`,
-    //     info: item.name
-    //   }
-    // })
     
     // 展示今日节日弹窗
-    // this.festivalsOfTheDay = this.festivalList.filter(item => {
-    //   return item.date == this.selectDate
-    // })
     this.showDetail = true
 
     // 选择文件
+    // TODO 兼容其他端尤其是小程序端
     let fileInput = document.createElement('input')
     fileInput.type = 'file'
     fileInput.id = 'file-input'
@@ -131,6 +146,7 @@ export default {
         return item
       })
       let resultList = [...regularFestivals, ...weekBasedFestivals]
+      console.log("resultList:", resultList)
       this.setFestivalList(resultList)
       this.festivalsOfTheDay = this.festivalList.filter(item => {
         return item.date == this.selectDate
@@ -165,9 +181,23 @@ export default {
       this.setFestivalList(fileData)
       this.useExcel = true
     },
+    exportFestival() {
+      exportExcel(this.festivalList)
+    },
+    locateFestival(e) {
+      console.log("locateFestival e:", e)
+      this.locateDate = `${this.today.getFullYear()}-${e}`
+      this.searchValue = ''
+    },
     navToAdd() {
+      console.log(nam)
       uni.navigateTo({
         url: `/pages/index/addFestival?selectDate=${this.selectDate}`,
+      })
+    },
+    navToCountDown() {
+      uni.navigateTo({
+        url: `/pages/dayCountDown/index`
       })
     }
   }
@@ -197,17 +227,26 @@ export default {
         height: 48rpx;
       }
     }
-    .buttons {
+    .ops {
+      // padding-left: 30rpx;
+      margin-bottom: 25rpx;
       .btn {
         // width: 120rpx;
-        padding: 0 20rpx;
+        padding: 10rpx 18rpx;
         // height: 40rpx;
         background-color: #2979ff;
         color: #fff;
-        font-size: 32rpx;
-        margin-right: 20rpx;
+        font-size: 30rpx;
+        margin-right: 16rpx;
         border-radius: 10rpx;
       }
+    }
+    .count-down-entry {
+      position: fixed;
+      right: 30rpx;
+      bottom: 30rpx;
+      font-size: 28rpx;
+      color: #999;
     }
   }
 }
