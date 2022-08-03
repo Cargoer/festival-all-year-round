@@ -88,14 +88,16 @@ export default {
       height: 700rpx;
       background-color: #fff;
       border-radius: 0 0 12rpx 12rpx;
+
+      .festival-image {
+        width: 100%;
+      }
     }
 
     .no-festival {
       margin-top: 100rpx;
     }
   }
-
-  
 
   .close-btn {
     width: 48rpx;

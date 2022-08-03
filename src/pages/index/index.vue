@@ -1,7 +1,11 @@
 <template>
 	<view class="main-wrap">
+
 		<!-- <Header :title="title"></Header> -->
+
     <view class="main-container">
+
+      <!-- 顶部操作区域 -->
       <view class="ops fr p-r">
         <uni-search-bar 
           :focus="searchFocus" 
@@ -19,6 +23,7 @@
         ></MatchList>
       </view>
 
+      <!-- 日历视图区域 -->
       <uni-calendar 
         class="uni-calendar--hook" 
         :selected="festivalInCalendar" 
@@ -29,6 +34,8 @@
         @monthSwitch="handleMonthSwitch" 
         :date="locateDate"
       />
+
+      <!-- 底部信息区域 -->
       <view class="bottom-area">
         <view class="simple-festival-info">
           <view class="simple-festival-name" v-for="(item, index) in festivalsOfTheDay" :key="index">
@@ -40,19 +47,23 @@
           src="@/static/image/add.png" 
           mode="aspectFill" 
           class="add-btn" 
-          @click="navToAdd"
+          @click="navTo('addFestival')"
         ></image>
         <!-- #endif -->
       </view>
-      <!-- <uni-file-picker limit="1" title="请选择excel文件" @select="handleFileSelect"></uni-file-picker> -->
       
-      <view class="count-down-entry" @click="navToCountDown">节日倒数</view>
+      <!-- 更多 -->
+      <view 
+        class="count-down-entry" 
+        @click="navTo('dayCountDown')"
+      >节日倒数</view>
       
       <FestivalDetail
         v-show="showDetail"
         :festivalsOfTheDay="festivalsOfTheDay"
         @close="showDetail = false"
       ></FestivalDetail>
+
     </view>
 	</view>
 </template>
@@ -61,8 +72,9 @@
 import Header from '@/components/header.vue'
 import FestivalDetail from './components/festivalDetail.vue'
 import MatchList from './components/matchList.vue'
-import { getDateObj, getWeekBasedDate, readExcel, exportExcel } from '@/utils/tools.js'
+import { getWeekBasedDate, readExcel, exportExcel } from '@/utils/tools.js'
 import festivalRecords from '@/static/data/festivals.js'
+import { getTableRecords } from '@/api/airtableRequest.js'
 import { mapState, mapGetters, mapMutations } from 'vuex'
 
 export default {
@@ -70,7 +82,6 @@ export default {
     return {
       title: '每逢佳节',  // 页面标题
       selectDate: '',  // 选中日期
-      festivalsOfTheDay: [],  // 选中日期的节日列表
       showDetail: false,  // 显示节日详情弹窗
 
       today: new Date(),
@@ -85,23 +96,23 @@ export default {
       useExcel: false,  // 是否导入了excel文件
     }
   },
+
   components: {
     Header,
     FestivalDetail,
     MatchList,
   },
-  options: {
-    styleIsolation: 'shared'
-  },
+
   computed: {
-    ...mapState(["festivalTable", "festivalList"]),
-    ...mapGetters(["festivalInCalendar"])
-  },
-  mounted() {
-    window.onerror = function(event) {
-      console.log("log:", event)
+    ...mapState(["festivalList"]),
+    ...mapGetters(["festivalInCalendar"]),
+    festivalsOfTheDay() {
+      return this.festivalList.filter(item => {
+        return item.date == this.selectDate
+      })
     }
   },
+
   async onLoad() {
     this.firstDayOfTheYear = `${this.today.getFullYear()}-1-1`
     this.lastDayOfTheYear = `${this.today.getFullYear()}-12-31`
@@ -114,7 +125,7 @@ export default {
     // 展示今日节日弹窗
     this.showDetail = true
 
-    // 选择文件
+    // 选择文件（当前证实app端无效，点击没有反应）
     // TODO 兼容其他端尤其是小程序端
     let fileInput = document.createElement('input')
     fileInput.type = 'file'
@@ -125,19 +136,23 @@ export default {
     }
     document.body.appendChild(fileInput)
   },
+
   methods: {
     ...mapMutations(["setFestivalList"]),
+
     async queryFestivalRecords() {
       let tempFestivals
-      // 静态模式
-      // #ifdef MP-WEIXIN
-      tempFestivals = festivalRecords
-      // #endif
 
       // airtable
-      // #ifndef MP-WEIXIN
-      tempFestivals = await this.festivalTable.getRecords()
-      // #endif
+      try {
+        tempFestivals = await getTableRecords('festivals_test')
+      } catch(err) {
+        uni.hideLoading()
+        uni.showToast({
+          title: err?.message
+        })
+      }
+      tempFestivals = tempFestivals.data.records.map(item => item.fields)
 
       let regularFestivals = tempFestivals.filter(item => item.type == 'regular')
       let weekBasedFestivals = tempFestivals.filter(item => item.type == 'weekbased').map(item => {
@@ -148,13 +163,11 @@ export default {
       let resultList = [...regularFestivals, ...weekBasedFestivals]
       console.log("resultList:", resultList)
       this.setFestivalList(resultList)
-      this.festivalsOfTheDay = this.festivalList.filter(item => {
-        return item.date == this.selectDate
-      })
       this.useExcel = false
     },
+
     handleCalendarChange(e) {
-      console.log("calendar change:", e)
+      console.log("[event] calendar change:", e)
       let eDate = `${+e.month}-${e.date}`
       if(eDate == this.selectDate) {
         if(this.festivalsOfTheDay.length > 0) {
@@ -162,18 +175,20 @@ export default {
         }
       } else {
         this.selectDate = eDate
-        this.festivalsOfTheDay = this.festivalList.filter(item => {
-          return item.date == eDate
-        })
-        console.log("festivalsOfTheDay:", this.festivalsOfTheDay)
       }
     },
+
     handleMonthSwitch(e) {
-      console.log("month switch:", e)
+      console.log("[event] handleMonthSwitch:", e)
+      this.selectDate = `${e.month}-1`
     },
+
     activeFileInput() {
+      // #ifdef H5
       $("#file-input").click()
+      // #endif
     },
+
     async handleFileSelect(e) {
       console.log("handleFileSelect e:", e.target.files)
       let fileData = await readExcel(e.target.files[0])
@@ -181,24 +196,37 @@ export default {
       this.setFestivalList(fileData)
       this.useExcel = true
     },
+
     exportFestival() {
       exportExcel(this.festivalList)
     },
+
     locateFestival(e) {
       console.log("locateFestival e:", e)
       this.locateDate = `${this.today.getFullYear()}-${e}`
       this.searchValue = ''
     },
-    navToAdd() {
-      console.log(nam)
-      uni.navigateTo({
-        url: `/pages/index/addFestival?selectDate=${this.selectDate}`,
-      })
-    },
-    navToCountDown() {
-      uni.navigateTo({
-        url: `/pages/dayCountDown/index`
-      })
+
+    // 跳转方法
+    navTo(tag) {
+      switch(tag) {
+        // 跳转添加节日页
+        case 'addFestival':
+          uni.navigateTo({
+            url: `/pages/index/addFestival?selectDate=${this.selectDate}`,
+          })
+          break
+        
+        // 跳转节日倒数页
+        case 'dayCountDown':
+          uni.navigateTo({
+            url: `/pages/dayCountDown/index`
+          })
+          break
+        
+        default:
+          return
+      }
     }
   }
 }
@@ -206,12 +234,25 @@ export default {
 
 <style lang="scss" scoped>
 .main-wrap {
-  ::v-deep.uni-calendar-item--hook {
-    height: 120rpx;
-  }
+
   .main-container {
     position: relative;
     padding-top: 40rpx;
+
+    .ops {
+      margin-bottom: 25rpx;
+      .btn {
+        // width: 120rpx;
+        padding: 10rpx 18rpx;
+        // height: 40rpx;
+        background-color: #2979ff;
+        color: #fff;
+        font-size: 30rpx;
+        margin-right: 16rpx;
+        border-radius: 10rpx;
+      }
+    }
+
     .bottom-area {
       position: relative;
       margin-top: 30rpx;
@@ -227,20 +268,7 @@ export default {
         height: 48rpx;
       }
     }
-    .ops {
-      // padding-left: 30rpx;
-      margin-bottom: 25rpx;
-      .btn {
-        // width: 120rpx;
-        padding: 10rpx 18rpx;
-        // height: 40rpx;
-        background-color: #2979ff;
-        color: #fff;
-        font-size: 30rpx;
-        margin-right: 16rpx;
-        border-radius: 10rpx;
-      }
-    }
+    
     .count-down-entry {
       position: fixed;
       right: 30rpx;

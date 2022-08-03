@@ -68,7 +68,6 @@
     "@dcloudio/uni-stat": "^2.0.1-34920220609002",
     "@dcloudio/uni-ui": "^1.4.16",
     "@vue/shared": "^3.0.0",
-    "airtable": "^0.11.4",
     "core-js": "^3.6.5",
     "flyio": "^0.6.2",
     "js-export-excel": "^1.1.4",

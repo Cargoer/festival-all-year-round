@@ -29,7 +29,8 @@
 
 <script>
 import Header from '@/components/header.vue'
-import { mapState, mapMutations } from 'vuex'
+import { mapMutations } from 'vuex'
+import { addRecord, updateRecord } from '@/api/airtableRequest.js'
 
 export default {
   data() {
@@ -72,9 +73,6 @@ export default {
   components: {
     Header,
   },
-  computed: {
-    ...mapState(["festivalTable"])
-  },
   onLoad(e) {
     console.log("add Festival onload, e:", e)
     if(e.selectDate) {
@@ -85,23 +83,27 @@ export default {
   },
   methods: {
     ...mapMutations(["addFestival"]),
-    // TODO
     // 提交后无法自动从airtable同步刷新，可以再存一份到本地
     submit() {
       this.$refs["baseForm"].validate().then(res => {
         console.log('pass validate:', res);
         // 添加接口
         this.addFestival(this.baseFormData)
-        this.festivalTable.addRecord(this.baseFormData).then(res => {
+        addRecord("festivals_test", this.baseFormData).then(res => {
+          console.log("addRecord res:", res)
+          let record = res.data.records[0]
+          let {id, fields} = record
+          updateRecord("festivals_test", id, {id, ...fields})
           uni.showToast({
             title: '添加成功',
             icon: 'none',
-            duration: 2000,
+            duration: 1500,
           })
           setTimeout(() => {
             uni.navigateBack()
-          }, 2500)
+          }, 2000)
         }).catch(err => {
+          console.error("addRecord err:", err)
           uni.showToast({
             title: '添加失败' + err?.message,
             icon: 'none',

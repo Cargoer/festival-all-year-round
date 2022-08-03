@@ -53,7 +53,6 @@ export default {
         month-1, 
         day,
       )
-      console.log(today, dateInTheYear)
       if(dateInTheYear < today) return
       return Math.floor((dateInTheYear - today) / (24 * 60 * 60 * 1000))
     }
