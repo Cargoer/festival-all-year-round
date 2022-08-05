@@ -5,6 +5,7 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     festivalList: [],
+    bigEventList: [],
   },
   getters: {
     festivalInCalendar(state) {
@@ -21,6 +22,10 @@ const store = new Vuex.Store({
     setFestivalList(state, val) {
       console.log("[store] setFestivalList:", val)
       state.festivalList = val
+    },
+    setBigEventList(state, val) {
+      console.log("[store] setBigEventList:", val)
+      state.bigEventList = val
     },
     addFestival(state, val) {
       console.log("[store] addFestival:", val)

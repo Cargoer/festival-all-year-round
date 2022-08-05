@@ -10,7 +10,7 @@
             class="festival-image" 
           ></image>
           <view class="festival-name">{{ item.name }}</view>
-          <view class="festival-desc">{{ item.description }}</view>
+          <view class="festival-desc" v-html="linkHandledTxt(item.description)"></view>
         </swiper-item>
       </swiper>
       <view v-else class="no-festival">
@@ -49,6 +49,15 @@ export default {
   methods: {
     close() {
       this.$emit("close")
+    },
+    linkHandledTxt(txt) {
+      let resultTxt = txt
+      let reg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/g
+      let matches = txt.match(reg)
+      matches.forEach(m => {
+        resultTxt = resultTxt.replace(m, `<a href="${m}">链接</a>`)
+      })
+      return resultTxt
     }
   }
 }
@@ -91,6 +100,10 @@ export default {
 
       .festival-image {
         width: 100%;
+      }
+      .festival-desc {
+        margin-top: 10rpx;
+        width: 90%;
       }
     }
 

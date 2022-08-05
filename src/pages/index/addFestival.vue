@@ -9,11 +9,14 @@
         <uni-forms-item label="节日类型" required name="type">
           <uni-data-checkbox v-model="baseFormData.type" :localdata="festivalTypes" @change="handleTypeChange" />
         </uni-forms-item>
-        <uni-forms-item label="所在日期" v-if="baseFormData.type == 'regular'" required name="date">
-          <uni-easyinput v-model="baseFormData.date" placeholder="例：3-15" />
-        </uni-forms-item>
         <uni-forms-item label="所在日期" v-if="baseFormData.type == 'weekbased'" required name="date">
           <uni-easyinput v-model="baseFormData.date" placeholder="例：6-3-5，含义：6月第3个星期五" />
+        </uni-forms-item>
+        <uni-forms-item label="所在日期" v-else required name="date">
+          <uni-easyinput v-model="baseFormData.date" placeholder="例：3-15" />
+        </uni-forms-item>
+        <uni-forms-item label="发生年份" v-if="baseFormData.type == 'bigEvent'" required name="date">
+          <uni-easyinput v-model="baseFormData.year" placeholder="例：3-15" />
         </uni-forms-item>
         <uni-forms-item label="节日图片">
           <uni-easyinput v-model="baseFormData.image" placeholder="请输入相关图片链接" />
@@ -41,12 +44,14 @@ export default {
         date: '',
         type: '',
         image: '',
-        description: ''
+        description: '',
+        year: '',
       },
       festivalTypes: [
         { text: '公历日期', value: 'regular' },
         { text: '根据星期', value: 'weekbased' },
         // { text: '农历日期', value: 'lunar' },
+        { text: '大事件', value: 'bigEvent' }
       ],
       rules: {
         name: {
@@ -97,11 +102,11 @@ export default {
           uni.showToast({
             title: '添加成功',
             icon: 'none',
-            duration: 1500,
+            duration: 1000,
           })
           setTimeout(() => {
             uni.navigateBack()
-          }, 2000)
+          }, 1500)
         }).catch(err => {
           console.error("addRecord err:", err)
           uni.showToast({
@@ -113,12 +118,17 @@ export default {
         console.log('validate err', err);
       })
     },
+
     handleTypeChange(e) {
-      console.log("handleTypeChange e:", e)
-      if(e.detail.data.value == 'weekbased') {
-        this.baseFormData.date = ''
-      } else {
-        this.baseFormData.date = this.selectDate
+      console.log("[event] handleTypeChange e:", e)
+      switch(e.detail.value) {
+        case 'weekbased':
+          this.baseFormData.date = ''
+          break
+        case 'bigEvent':
+          this.baseFormData.year = new Date().getFullYear()
+        default:
+          this.baseFormData.date = this.selectDate
       }
     }
   }

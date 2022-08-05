@@ -38,8 +38,8 @@
       <!-- 底部信息区域 -->
       <view class="bottom-area">
         <view class="simple-festival-info">
-          <view class="simple-festival-name" v-for="(item, index) in festivalsOfTheDay" :key="index">
-            {{ item.name }}
+          <view class="simple-festival-name" v-for="(item, index) in overallList" :key="index">
+            {{ item.name || item.desc }}
           </view>
         </view>
         <!-- #ifndef MP-WEIXIN -->
@@ -73,7 +73,6 @@ import Header from '@/components/header.vue'
 import FestivalDetail from './components/festivalDetail.vue'
 import MatchList from './components/matchList.vue'
 import { getWeekBasedDate, readExcel, exportExcel } from '@/utils/tools.js'
-import festivalRecords from '@/static/data/festivals.js'
 import { getTableRecords } from '@/api/airtableRequest.js'
 import { mapState, mapGetters, mapMutations } from 'vuex'
 
@@ -104,12 +103,30 @@ export default {
   },
 
   computed: {
-    ...mapState(["festivalList"]),
+    ...mapState(["festivalList", "bigEventList"]),
     ...mapGetters(["festivalInCalendar"]),
     festivalsOfTheDay() {
       return this.festivalList.filter(item => {
         return item.date == this.selectDate
       })
+    },
+    overallList() {
+      let bigEventDescList = this.bigEventList.filter(item => item.date == this.selectDate).map(item => {
+        let thisYear = this.today.getFullYear()
+        let prefix = ''
+        if(item.year == thisYear) {
+          prefix = '今年今日, '
+        } else if(item.year < thisYear) {
+          prefix = `${thisYear - item.year}年前的今天，`
+        } else {
+          prefix = `${item.year - thisYear}年后的今天，`
+        }
+        return { desc: `${prefix}${item.name}` }
+      })
+      let festivalsOfTheDay = this.festivalList.filter(item => {
+        return item.date == this.selectDate
+      })
+      return [...festivalsOfTheDay, ...bigEventDescList]
     }
   },
 
@@ -138,7 +155,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setFestivalList"]),
+    ...mapMutations(["setFestivalList", "setBigEventList"]),
 
     async queryFestivalRecords() {
       let tempFestivals
@@ -161,8 +178,11 @@ export default {
         return item
       })
       let resultList = [...regularFestivals, ...weekBasedFestivals]
-      console.log("resultList:", resultList)
       this.setFestivalList(resultList)
+
+      let bigEvents = tempFestivals.filter(item => item.type = 'bigEvent')
+      this.setBigEventList(bigEvents)
+
       this.useExcel = false
     },
 
